@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} — GeoTrack{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div class="row between">
+    <div>
+      <h1>🏗️ {{ project.name }}</h1>
+      <p class="muted">
+        {% if client %}العميل: {{ client.name }}{% endif %}
+        {% if not client %}بدون عميل{% endif %}
+        · الحالة: <b>{{ status_ar[project.status] if project.status in status_ar else project.status }}</b>
+        {% if latest_quote %} · <a href="/quotes/{{ latest_quote.id }}">{{ latest_quote_code }}</a>{% endif %}
+      </p>
+    </div>
+    <a class="btn btn-primary btn-lg" href="/projects/{{ project.id }}/field">📱 شاشة سواق الحفار</a>
+  </div>
+
+  <div class="project-actions">
+    {% if latest_quote %}
+    <form method="post" action="/projects/{{ project.id }}/invoice" class="inline">
+      <button class="btn btn-primary" type="submit">🧾 إنشاء فاتورة ختامية</button>
+    </form>
+    {% endif %}
+    {% if logs_count and logs_count > 0 %}
+    <a class="btn btn-ghost" href="/projects/{{ project.id }}/report.pdf">📄 التقرير الفني (PDF)</a>
+    {% endif %}
+    {% if project.status != 'completed' %}
+    <form method="post" action="/projects/{{ project.id }}/complete" class="inline"
+          onsubmit="return confirm('إنهاء وتسليم المشروع؟ الحفار هيتفك تلقائيًا ويرجع متاح لمشاريع تانية.')">
+      <button class="btn btn-complete" type="submit">🏁 إنهاء وتسليم المشروع</button>
+    </form>
+    {% else %}
+    <span class="complete-banner">🏆 المشروع مكتمل ومسلم</span>
+    <form method="post" action="/projects/{{ project.id }}/reopen" class="inline">
+      <button class="btn btn-small" type="submit">إعادة فتح المشروع</button>
+    </form>
+    {% endif %}
+    {% if latest_invoice %}
+    <a class="btn btn-small" href="/invoices/{{ latest_invoice.id }}">آخر فاتورة: {{ latest_invoice.invoice_number }} — {{ latest_invoice.executed_total }} {{ latest_invoice.currency }}</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="project-grid">
+
+  <section class="card rig-card">
+    <h2>الحفار المخصص</h2>
+    {% if rig %}
+    <div class="rig-current">
+      <span class="rig-code">{{ rig.code }}</span>
+      <div>
+        <div class="rig-name">{{ rig.name }}</div>
+        <div class="muted">{{ rig_kind_ar[rig.kind] if rig.kind in rig_kind_ar else rig.kind }} · {{ rig_status_ar[rig.status] if rig.status in rig_status_ar else rig.status }}</div>
+      </div>
+    </div>
+    <form method="post" action="/projects/{{ project.id }}/unassign-rig" class="inline">
+      <button class="btn btn-small" type="submit">فك التخصيص</button>
+    </form>
+    {% else %}
+    <p class="muted">لسه ما اتخصصش حفار للمشروع.</p>
+    {% endif %}
+
+    <form method="post" action="/projects/{{ project.id }}/assign-rig" class="assign-form">
+      <label class="field">
+        <span class="label">{{ 'تغيير الحفار' if rig else 'تخصيص حفار' }}</span>
+        <select class="input" name="rig_id" required>
+          <option value="">— اختار —</option>
+          {% for candidate in assignable_rigs %}
+          <option value="{{ candidate.id }}" {% if rig and candidate.id == rig.id %}selected{% endif %}>
+            {{ candidate.code }} — {{ candidate.name }} ({{ rig_status_ar[candidate.status] if candidate.status in rig_status_ar else candidate.status }})
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="btn btn-primary" type="submit">حفظ التخصيص</button>
+    </form>
+  </section>
+
+  {% if progress %}
+  <section class="card progress-card">
+    <div class="row between">
+      <h2>التنفيذ الفعلي مقابل المقايسة</h2>
+      <span class="overall">نسبة الإنجاز الإجمالية: <b>{{ '%.1f' % progress.overall_percent }}%</b></span>
+    </div>
+
+    <div class="metric-chips">
+      <div class="metric"><span class="metric-value">{{ '%.1f' % progress.totals.depth_m }}</span><span class="metric-label">متر حفر منفذ</span></div>
+      <div class="metric"><span class="metric-value">{{ '%.1f' % progress.totals.concrete_m3 }}</span><span class="metric-label">م³ خرسانة مصبوبة</span></div>
+      <div class="metric"><span class="metric-value">{{ '%.1f' % progress.totals.sheet_pile_m2 }}</span><span class="metric-label">م² ستائر مركبة</span></div>
+      <div class="metric"><span class="metric-value">{{ '%.1f' % progress.totals.operating_hours }}</span><span class="metric-label">ساعة تشغيل</span></div>
+      <div class="metric"><span class="metric-value">{{ progress.totals.logs_count }}</span><span class="metric-label">يوم عمل مسجل</span></div>
+    </div>
+
+    {% if progress.lines %}
+    <table class="table progress-table">
+      <thead><tr><th>البند</th><th>المتعاقد</th><th>المنفذ</th><th>الإنجاز</th></tr></thead>
+      <tbody>
+        {% for line in progress.lines %}
+        <tr>
+          <td><span class="mono">{{ line.code }}</span><div class="raw-text small">{{ line.description | truncate(70) }}</div></td>
+          <td class="num">{{ '%.2f' % line.contract_qty }} {{ line.contract_unit }}</td>
+          <td class="num">{{ '%.2f' % line.actual }} {{ line.contract_unit }}</td>
+          <td>
+            <div class="progress-bar"><div class="fill {% if line.percent >= 100 %}done{% elif line.percent > 0 %}half{% endif %}" style="width: {{ [line.percent, 100] | min }}%"></div></div>
+            <span class="mono small">{{ '%.1f' % line.percent }}%</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted small">القيمة المحققة تقريبًا: <b>{{ '%.2f' % progress.earned }}</b> من {{ '%.2f' % progress.tracked_value }} (البنود القابلة للقياس ميدانيًا فقط)</p>
+    {% endif %}
+
+    {% if progress.untracked %}
+    <details class="untracked">
+      <summary class="muted">بنود بدون مقياس ميداني ({{ progress.untracked | length }})</summary>
+      <ul>
+        {% for line in progress.untracked %}
+        <li><span class="mono">{{ line.code }}</span> — {{ line.description | truncate(60) }} · {{ '%.2f' % line.contract_qty }} {{ line.contract_unit }}</li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+  </section>
+  {% else %}
+  <section class="card"><p class="muted">لا يوجد عرض سعر لهذا المشروع بعد. <a href="/documents">ارفع مقايسة أولاً</a>.</p></section>
+  {% endif %}
+</div>
+
+<section class="card">
+  <div class="row between">
+    <h2>آخر السجلات اليومية</h2>
+    <a class="btn btn-small" href="/projects/{{ project.id }}/field">➕ سجل اليوم ←</a>
+  </div>
+  {% if recent_logs %}
+  <div class="table-card">
+    <table class="table">
+      <thead><tr><th>التاريخ</th><th>الحفار</th><th>الخازوق</th><th>عمق (م)</th><th>خرسانة (م³)</th><th>ستائر (م²)</th><th>ساعات</th><th>ملاحظات</th></tr></thead>
+      <tbody>
+        {% for log in recent_logs %}
+        <tr class="{% if log.created_offline %}offline-row{% endif %}">
+          <td class="mono ltr">{{ log.log_date }}</td>
+          <td class="mono">{{ log.rig_id or '—' }}</td>
+          <td>{{ log.pile_id or '—' }}</td>
+          <td class="num">{{ '%.2f' % log.depth_m }}</td>
+          <td class="num">{{ '%.2f' % log.concrete_m3 }}</td>
+          <td class="num">{{ '%.2f' % log.sheet_pile_m2 }}</td>
+          <td class="num">{{ '%.2f' % log.operating_hours }}</td>
+          <td class="muted small">{{ (log.soil_notes or log.breakdown_notes or log.remarks or '') | truncate(48) }}{% if log.created_offline %} <span title="سُجل دون اتصال">📡</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">لسه ما فيش سجلات. السواق يبدأ من <a href="/projects/{{ project.id }}/field">شاشة سواق الحفار</a>.</p>
+  {% endif %}
+</section>
+
+{% if documents %}
+<section class="card">
+  <h2>مستندات المشروع</h2>
+  <ul class="doc-list">
+    {% for doc in documents %}
+    <li><a href="/documents/{{ doc.id }}/review">{{ doc.original_name }}</a> <span class="muted">· {{ doc.kind.value }} · {{ doc.status.value }}</span></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% endblock %}

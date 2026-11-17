@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}الحفارات — GeoTrack{% endblock %}
+{% block content %}
+
+<div class="page-head row between">
+  <div>
+    <h1>المعدات والحفارات</h1>
+    <p class="muted">أسطول الشركة. اربط حفار من صفحة المشروع بنقرة واحدة.</p>
+  </div>
+  <a class="btn btn-ghost" href="/projects">→ المشاريع</a>
+</div>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form class="card form" method="post" action="/rigs">
+  <div class="grid-2">
+    <label class="field">
+      <span class="label">الكود <b class="req">*</b></span>
+      <input class="input" name="code" placeholder="DRL-001" required pattern="[A-Za-z0-9\-]+">
+    </label>
+    <label class="field">
+      <span class="label">الاسم <b class="req">*</b></span>
+      <input class="input" name="name" placeholder="Bauer BG 24 micropile rig" required>
+    </label>
+  </div>
+  <div class="grid-2">
+    <label class="field">
+      <span class="label">النوع</span>
+      <select class="input" name="kind">
+        {% for value, label in rig_kind_ar.items() %}
+        <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="field">
+      <span class="label">ملاحظات</span>
+      <input class="input" name="notes" placeholder="عمر المعدة، آخر صيانة…">
+    </label>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">➕ إضافة للأسطول</button>
+  </div>
+</form>
+
+{% if rigs %}
+<div class="table-card">
+  <table class="table">
+    <thead><tr><th>الكود</th><th>الاسم</th><th>النوع</th><th>الحالة</th><th>ملاحظات</th></tr></thead>
+    <tbody>
+      {% for rig in rigs %}
+      <tr>
+        <td class="mono"><b>{{ rig.code }}</b></td>
+        <td>{{ rig.name }}</td>
+        <td>{{ rig_kind_ar[rig.kind] if rig.kind in rig_kind_ar else rig.kind }}</td>
+        <td><span class="tag tag-{{ rig.status }}">{{ rig_status_ar[rig.status] if rig.status in rig_status_ar else rig.status }}</span></td>
+        <td class="muted">{{ rig.notes or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty"><div class="empty-icon">🏗️</div><p>لسه ما فيش معدات. ضيف أول حفار فوق.</p></div>
+{% endif %}
+
+{% endblock %}

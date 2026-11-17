@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}المقايسات — GeoTrack{% endblock %}
+{% block content %}
+
+<div class="page-head row">
+  <div>
+    <h1>قائمة المقايسات</h1>
+    <p class="muted">كل ملف تم رفعه ومعالجته. اضغط على أي ملف لفتح شاشة المراجعة.</p>
+  </div>
+  <a class="btn btn-primary" href="/upload">＋ رفع ملف جديد</a>
+</div>
+
+{% if not rows %}
+<div class="card empty">
+  <div class="empty-icon">📄</div>
+  <p>لسه ما فيش مقايسات. <a href="/upload">ارفع أول ملف</a>.</p>
+</div>
+{% else %}
+<div class="table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>الملف</th>
+        <th>النوع</th>
+        <th>تاريخ الرفع</th>
+        <th>البنود</th>
+        <th>حالة</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      {% set doc = row.doc %}
+      {% set counts = row.counts %}
+      <tr>
+        <td><span class="mono" title="{{ doc.sha256 }}">{{ doc.original_name }}</span></td>
+        <td><span class="tag">{{ doc.kind.value }}</span></td>
+        <td class="mono ltr">{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') if doc.uploaded_at else '—' }}</td>
+        <td>
+          <div class="counts">
+            <span class="chip chip-total">{{ counts.total }}</span>
+            {% if counts.approved %}<span class="chip chip-ok">✓ {{ counts.approved }}</span>{% endif %}
+            {% if counts.edited %}<span class="chip chip-info">✎ {{ counts.edited }}</span>{% endif %}
+            {% if counts.proposed %}<span class="chip chip-warn">{{ counts.proposed }} بانتظار</span>{% endif %}
+            {% if counts.rejected %}<span class="chip chip-bad">✕ {{ counts.rejected }}</span>{% endif %}
+          </div>
+        </td>
+        <td><span class="tag tag-{{ doc.status.value }}">{{ doc.status.value }}</span></td>
+        <td><a class="btn btn-small" href="/documents/{{ doc.id }}/review">فتح المراجعة ←</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% endblock %}

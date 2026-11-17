@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}المشاريع — GeoTrack{% endblock %}
+{% block content %}
+
+<div class="page-head row between">
+  <div>
+    <h1>المشاريع</h1>
+    <p class="muted">كل مشروع وآخر عرض سعر وحالته. اضغط "فتح" لمتابعة التنفيذ والسجل اليومي.</p>
+  </div>
+  <a class="btn btn-ghost" href="/rigs">🏗️ إدارة الحفارات</a>
+</div>
+
+{% if not rows %}
+<div class="card empty"><div class="empty-icon">🏗️</div><p>لسه ما فيش مشاريع. <a href="/documents">ابدأ من مستند مقايسة</a>.</p></div>
+{% else %}
+<div class="table-card">
+  <table class="table">
+    <thead><tr><th>المشروع</th><th>العميل</th><th>الحفار</th><th>آخر عرض</th><th>الحالة</th><th></th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td><b>{{ row.project.name }}</b></td>
+        <td>{{ row.client.name if row.client else '—' }}</td>
+        <td>{% if row.rig %}<span class="tag">{{ row.rig.code }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="mono">{% if row.latest_quote %}GT-{{ '%04d' % row.latest_quote.id }}-v{{ row.latest_quote.version }}<br><small class="muted">{% if row.latest_quote.totals_json %}{{ row.latest_quote.totals_json.grand_total }} {{ row.latest_quote.currency }}{% endif %}</small>{% else %}—{% endif %}</td>
+        <td><span class="tag tag-{{ row.project.status }}">{{ status_ar[row.project.status] if row.project.status in status_ar else row.project.status }}</span></td>
+        <td><a class="btn btn-small" href="/projects/{{ row.project.id }}">فتح ←</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% endblock %}

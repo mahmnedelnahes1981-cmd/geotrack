@@ -1,0 +1,94 @@
+<tr id="item-{{ item.id }}" class="item-row status-{{ item.status.value }}">
+  <td class="cell-line">{{ item.line_no or '·' }}</td>
+
+  <td class="cell-raw">
+    <div class="raw-text">{{ item.raw_description }}</div>
+    {% if item.source_ref %}<div class="src mono">{{ item.source_ref }}</div>{% endif %}
+  </td>
+
+  <td class="cell-norm">
+    <input class="input norm-input" type="text" name="norm_description"
+           value="{{ item.norm_description or '' }}"
+           placeholder="البند بعد التطبيع…"
+           hx-post="/documents/{{ document_id }}/items/{{ item.id }}/update"
+           hx-trigger="change" hx-include="closest tr"
+           hx-target="#item-{{ item.id }}" hx-swap="outerHTML">
+    <select class="input cat-select" name="norm_category"
+            hx-post="/documents/{{ document_id }}/items/{{ item.id }}/update"
+            hx-trigger="change" hx-include="closest tr"
+            hx-target="#item-{{ item.id }}" hx-swap="outerHTML">
+      <option value="">— التصنيف —</option>
+      {% for value, label in categories %}
+      <option value="{{ value }}" {% if item.norm_category == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </td>
+
+  <td class="cell-qty">
+    <input class="input num qty-input" type="number" step="any" name="quantity"
+           value="{{ item.quantity if item.quantity is not none else '' }}"
+           placeholder="الكمية"
+           hx-post="/documents/{{ document_id }}/items/{{ item.id }}/update"
+           hx-trigger="change" hx-include="closest tr"
+           hx-target="#item-{{ item.id }}" hx-swap="outerHTML">
+    <input class="input unit-input" type="text" name="unit"
+           value="{{ item.unit or '' }}" placeholder="الوحدة"
+           hx-post="/documents/{{ document_id }}/items/{{ item.id }}/update"
+           hx-trigger="change" hx-include="closest tr"
+           hx-target="#item-{{ item.id }}" hx-swap="outerHTML">
+    <label class="factor" title="معامل التحويل إلى الوحدة الأساسية">
+      <span>×</span>
+      <input class="input num factor-input" type="number" step="any" name="unit_factor"
+             value="{{ item.unit_factor }}"
+             hx-post="/documents/{{ document_id }}/items/{{ item.id }}/update"
+             hx-trigger="change" hx-include="closest tr"
+             hx-target="#item-{{ item.id }}" hx-swap="outerHTML">
+    </label>
+    <div class="norm-unit">الأساسية: <b>{{ item.norm_unit or '؟' }}</b></div>
+  </td>
+
+  <td class="cell-conf">
+    {% set pct = ((item.confidence | float) * 100) | round | int if item.confidence is not none else -1 %}
+    {% if pct < 0 %}
+      <span class="conf conf-none">—</span>
+    {% elif pct >= 80 %}
+      <span class="conf conf-high">{{ pct }}%</span>
+    {% elif pct >= 55 %}
+      <span class="conf conf-mid">{{ pct }}%</span>
+    {% else %}
+      <span class="conf conf-low">{{ pct }}%</span>
+    {% endif %}
+    <div class="status-pill status-pill-{{ item.status.value }}">{{ status_ar[item.status.value] }}</div>
+  </td>
+
+  <td class="cell-suggest">
+    <select class="input suggest-select" name="suggested_price_item_id"
+            hx-post="/documents/{{ document_id }}/items/{{ item.id }}/update"
+            hx-trigger="change" hx-include="closest tr"
+            hx-target="#item-{{ item.id }}" hx-swap="outerHTML">
+      <option value="">— بدون بند مرشح —</option>
+      {% for s in suggestions %}
+      <option value="{{ s.id }}" {% if s.id == item.suggested_price_item_id %}selected{% endif %}>
+        {{ s.code }} · {{ s.description | truncate(55) }}{% if s.unit %} ({{ s.unit }}){% endif %}
+      </option>
+      {% endfor %}
+    </select>
+    {% if suggestion_mismatch %}
+    <div class="mismatch">⚠ وحدة البند المرشح مختلفة عن وحدة السطر</div>
+    {% endif %}
+  </td>
+
+  <td class="cell-actions">
+    <div class="actions">
+      <button class="btn btn-approve" title="اعتماد"
+              hx-post="/documents/{{ document_id }}/items/{{ item.id }}/approve"
+              hx-target="#item-{{ item.id }}" hx-swap="outerHTML">✓</button>
+      <button class="btn btn-reject" title="رفض"
+              hx-post="/documents/{{ document_id }}/items/{{ item.id }}/reject"
+              hx-target="#item-{{ item.id }}" hx-swap="outerHTML">✕</button>
+      <button class="btn btn-ghost" title="إرجاع للمراجعة"
+              hx-post="/documents/{{ document_id }}/items/{{ item.id }}/reset"
+              hx-target="#item-{{ item.id }}" hx-swap="outerHTML">↺</button>
+    </div>
+  </td>
+</tr>

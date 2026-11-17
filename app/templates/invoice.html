@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}فاتورة {{ invoice.invoice_number }} — GeoTrack{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div class="row between">
+    <div>
+      <h1>🧾 فاتورة ختامية <span class="mono">{{ invoice.invoice_number }}</span></h1>
+      <p class="muted">{{ project.name if project else '—' }}{% if client %} · العميل: {{ client.name }}{% endif %}{% if quote_code %} · مرجع العقد: {{ quote_code }}{% endif %}</p>
+    </div>
+    <div class="row">
+      {% if project %}<a class="btn btn-ghost" href="/projects/{{ project.id }}">→ صفحة المشروع</a>{% endif %}
+      <a class="btn btn-primary" href="/invoices/{{ invoice.id }}/pdf">⬇ تحميل PDF</a>
+    </div>
+  </div>
+
+  <div class="counts big">
+    <span class="tag tag-extracted">{{ invoice.status }}</span>
+    <span class="chip chip-total">{{ lines | length }} بند مسعّر</span>
+    <span class="chip">العملة: {{ invoice.currency }}</span>
+  </div>
+
+  {% if siblings and siblings|length > 1 %}
+  <div class="counts">
+    {% for sibling in siblings %}
+    <a class="chip{% if sibling.id == invoice.id %} chip-total{% endif %}" href="/invoices/{{ sibling.id }}">{{ sibling.invoice_number }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="compare-strip">
+  <div class="compare-box compare-contract">
+    <span class="compare-value ltr">{{ '%.2f' % invoice.contract_value }}</span>
+    <span class="compare-label">قيمة العقد (المقايسة المعتمدة)</span>
+  </div>
+  <div class="compare-box compare-executed">
+    <span class="compare-value ltr">{{ '%.2f' % invoice.executed_subtotal }}</span>
+    <span class="compare-label">المنفذ فعليًا من السجل الميداني</span>
+  </div>
+</div>
+
+<div class="table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>م</th><th>الكود</th><th>البيان</th>
+        <th>المتعاقد</th><th>المنفذ</th><th>الوحدة</th>
+        <th>سعر الوحدة</th><th>قيمة المنفذ</th><th>الإنجاز</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in lines %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td class="mono ltr">{{ line.code }}</td>
+        <td class="desc-cell">{{ line.description }}</td>
+        <td class="num">{{ '%.3f' % line.contract_qty }}</td>
+        <td class="num">{{ '%.3f' % line.executed_qty }}</td>
+        <td>{{ line.unit }}</td>
+        <td class="num">{{ '%.2f' % line.unit_price }}</td>
+        <td class="num"><b>{{ '%.2f' % line.executed_value }}</b></td>
+        <td class="num">{{ '%.1f' % line.ratio }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if exclusions %}
+<div class="alert alert-warn">
+  <b>بنود غير مشمولة بالفاتورة (سعر مقطوعية/بنود بدون مقياس ميداني):</b>
+  <ul class="exclusions">
+    {% for exclusion in exclusions %}
+    <li><span class="mono">{{ exclusion.code }}</span> — قيمة {{ exclusion.contract_value }} {{ invoice.currency }} · {{ exclusion.reason }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="quote-summary">
+  <div class="totals-card">
+    <div class="total-row"><span>صافي قيمة الأعمال المنفذة</span><b class="num">{{ '%.2f' % invoice.executed_subtotal }} {{ invoice.currency }}</b></div>
+    <div class="total-row"><span>الضريبة ({{ invoice.tax_rate }}%)</span><b class="num">{{ '%.2f' % invoice.executed_tax }} {{ invoice.currency }}</b></div>
+    <div class="total-row grand"><span>الإجمالي مستحق الدفع</span><b class="num">{{ '%.2f' % invoice.executed_total }} {{ invoice.currency }}</b></div>
+  </div>
+</div>
+
+<p class="muted small">الأساس: كميات السجل اليومي للموقع (depth/concrete/sheet-pile) × الأسعار المعتمدة في عرض السعر. البنود النفعية تُعامل بالمراحل الفعلية.</p>
+
+{% endblock %}

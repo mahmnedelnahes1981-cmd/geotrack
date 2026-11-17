@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}رفع مقايسة جديدة — GeoTrack{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>رفع ملف المقايسة</h1>
+  <p class="muted">يدعم Excel / CSV / PDF رقمي (عربي وإنجليزي). الاستخراج حتمي — الـ LLM اختياري.</p>
+</div>
+
+{% if error %}
+<div class="alert alert-error">تعذرت المعالجة: {{ error }}</div>
+{% endif %}
+
+<form class="card form" method="post" action="/upload" enctype="multipart/form-data">
+  <label class="field">
+    <span class="label">ملف المقايسة <b class="req">*</b></span>
+    <input class="input file" type="file" name="file" accept=".xlsx,.xlsm,.csv,.pdf" required>
+    <span class="hint">PDF ممسوح (صور بلا طبقة نص) لسه مش مدعوم — بيحتاج OCR.</span>
+  </label>
+
+  <div class="grid-2">
+    <label class="field">
+      <span class="label">ربط بمشروع قائم</span>
+      <select class="input" name="project_id">
+        <option value="">— بدون مشروع —</option>
+        {% for project in projects %}
+        <option value="{{ project.id }}">{{ project.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label class="field">
+      <span class="label">…أو أنشئ مشروع جديد</span>
+      <input class="input" type="text" name="new_project_name" placeholder="مثال: مشروع ستائر لوحية — المرحلة الأولى">
+    </label>
+  </div>
+
+  <label class="check">
+    <input type="checkbox" name="run_llm" value="1">
+    <span>تشغيل التطبيع بالذكاء الاصطناعي بعد الاستخراج <small class="muted">(يحتاج Ollama شغال على localhost:11434)</small></span>
+  </label>
+
+  <div class="form-actions">
+    <button class="btn btn-primary btn-lg" type="submit">معالجة الملف ←</button>
+  </div>
+</form>
+
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}مراجعة المقايسة #{{ document.id }} — GeoTrack{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div class="row between">
+    <div>
+      <h1>مراجعة: <span class="mono">{{ document.original_name }}</span></h1>
+      <p class="muted">ملف #{{ document.id }} · {{ document.kind.value }} · {{ document.uploaded_at.strftime('%Y-%m-%d %H:%M') if document.uploaded_at else '' }}</p>
+    </div>
+    <a class="btn btn-ghost" href="/documents">→ كل المقايسات</a>
+  </div>
+
+  <div class="counts big">
+    <span class="chip chip-total">{{ counts.total }} بند</span>
+    <span class="chip chip-ok">✓ معتمد: {{ counts.approved }}</span>
+    <span class="chip chip-info">✎ معدّل: {{ counts.edited }}</span>
+    <span class="chip chip-warn">بانتظار: {{ counts.proposed }}</span>
+    <span class="chip chip-bad">✕ مرفوض: {{ counts.rejected }}</span>
+  </div>
+
+  <div class="quote-actions">
+    {% if document.project_id %}
+      <form method="post" action="/documents/{{ document.id }}/quote" class="inline">
+        <button type="submit" class="btn btn-primary btn-lg">💰 إنشاء عرض سعر</button>
+      </form>
+      <span class="muted">المشروع: <b>{{ project_name }}</b></span>
+    {% else %}
+      <details class="quote-details">
+        <summary class="btn btn-primary btn-lg">💰 إنشاء عرض سعر — اربط المشروع أولاً</summary>
+        <form class="card form quote-set-project" method="post" action="/documents/{{ document.id }}/set-project">
+          <div class="grid-2">
+            <label class="field">
+              <span class="label">ربط بمشروع قائم</span>
+              <select class="input" name="project_id">
+                <option value="">— بدون / اختر —</option>
+                {% for project in projects %}
+                <option value="{{ project.id }}">{{ project.name }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label class="field">
+              <span class="label">…أو أنشئ مشروع جديد</span>
+              <input class="input" type="text" name="new_project_name" placeholder="مثال: مشروع ستائر لوحية — المرحلة الأولى">
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">حفظ وإنشاء عرض السعر ←</button>
+        </form>
+      </details>
+    {% endif %}
+    {% if last_quote %}
+      <a class="btn btn-small" href="/quotes/{{ last_quote.id }}">آخر عرض: {{ last_quote.code }} — {{ last_quote.grand_total }} {{ last_quote.currency }}</a>
+    {% endif %}
+  </div>
+
+  {% if quote_error %}
+  <div class="alert alert-warn">
+    {% if quote_error == "needs_project" %}لازم تربط الملف بمشروع الأول — اختار مشروع أو أنشئ واحد من الأعلى.
+    {% elif quote_error == "no_price_list" %}مفيش قائمة أسعار مفعّلة. شغّل: <span class="mono">scripts/seed_price_list.py</span>
+    {% elif quote_error == "project_required" %}اختار مشروع قائم أو اكتب اسم مشروع جديد.
+    {% else %}تعذر إنشاء عرض السعر.{% endif %}
+  </div>
+  {% endif %}
+
+  {% if llm_error %}
+  <div class="alert alert-warn">تعذر التطبيع بالذكاء الاصطناعي — البنود موجودة زي ما استخرجها المحلل الحتمي.<br><span class="mono">{{ llm_error }}</span></div>
+  {% endif %}
+</div>
+
+<div class="table-card review-scroll">
+  <table class="table review">
+    <thead>
+      <tr>
+        <th>م</th>
+        <th>البند الخام (زي الملف)</th>
+        <th>البند المطبّع + التصنيف</th>
+        <th>الكمية · الوحدة · المعامل</th>
+        <th>الثقة</th>
+        <th>البند المرشح من قائمة الأسعار</th>
+        <th>إجراء</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      {% set suggestion_mismatch = mismatches[item.id] %}
+      {% include "partials/item_row.html" %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p class="muted small">الأخضر ≥ 80% ثقة · الأصفر 55–80% · الأحمر &lt; 55% (لازم نظرة عين). أي تعديل في القيم بيرجّع البند لحالة "معدّل" عشان يعتمده حد تاني.</p>
+
+{% endblock %}

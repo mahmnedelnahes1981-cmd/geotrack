@@ -1,0 +1,9 @@
+# Normalize line endings across platforms; keep binaries untouched.
+* text=auto
+
+*.pdf  binary
+*.xlsx binary
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.zip  binary

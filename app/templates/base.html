@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}GeoTrack{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/htmx.min.js"></script>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⛏</span>
+      <div>
+        <div class="brand-name">GeoTrack</div>
+        <div class="brand-sub">محرك مقايسات الحفر والأساسات العميقة</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="/upload">＋ ملف جديد</a>
+      <a href="/documents">المقايسات</a>
+      <a href="/projects">المشاريع</a>
+      <a href="/rigs">الحفارات</a>
+    </nav>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">GeoTrack Core — مرحلة التطوير الداخلي · البيانات لا تغادر جهازك</footer>
+</body>
+</html>

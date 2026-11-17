@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}سجل الحفار — {{ project.name }}{% endblock %}
+{% block head_extra %}<link rel="stylesheet" href="/static/field.css">{% endblock %}
+{% block content %}
+
+<div class="field-screen" data-project-id="{{ project.id }}">
+
+  <header class="field-topbar">
+    <a class="field-back" href="/projects/{{ project.id }}" title="رجوع للمشروع">→</a>
+    <div class="field-title">
+      <div class="field-project">{{ project.name }}</div>
+      <div class="field-sub">سجل الشغل اليومي — يعمل بدون إنترنت</div>
+    </div>
+    <div class="net" id="net-status"><span class="net-dot"></span><span id="net-text">…</span></div>
+  </header>
+
+  <form id="fieldlog-form" class="f-form" autocomplete="off">
+    <h1 class="f-h1">شغل النهاردة 👷</h1>
+
+    <label class="f-field">
+      <span>التاريخ</span>
+      <input type="date" name="log_date" value="{{ today }}" required>
+    </label>
+
+    <label class="f-field">
+      <span>الحفار / المعدة</span>
+      <select name="rig_id">
+        <option value="">— اختار —</option>
+        {% for r in rigs %}
+        <option value="{{ r.id }}" {% if project_rig and r.id == project_rig.id %}selected{% endif %}>{{ r.code }} — {{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label class="f-field">
+      <span>رقم الخازوق (Pile ID)</span>
+      <input type="text" name="pile_id" placeholder="مثال: P-01 / ST-03" inputmode="text">
+    </label>
+
+    <div class="f-grid">
+      <label class="f-field f-xl">
+        <span>العمق المنفذ (م)</span>
+        <input type="number" step="0.1" min="0" name="depth_m" inputmode="decimal" placeholder="0.0">
+      </label>
+      <label class="f-field f-xl">
+        <span>خرسانة مصبوبة (م³)</span>
+        <input type="number" step="0.1" min="0" name="concrete_m3" inputmode="decimal" placeholder="0.0">
+      </label>
+    </div>
+
+    <div class="f-grid">
+      <label class="f-field">
+        <span>ستائر مركبة (م²)</span>
+        <input type="number" step="0.5" min="0" name="sheet_pile_m2" inputmode="decimal" placeholder="0.0">
+      </label>
+      <label class="f-field">
+        <span>ساعات التشغيل</span>
+        <input type="number" step="0.5" min="0" name="operating_hours" inputmode="decimal" placeholder="0.0">
+      </label>
+    </div>
+
+    <label class="f-field">
+      <span>ملاحظات التربة</span>
+      <textarea name="soil_notes" rows="2" placeholder="تربة رملية كثيفة / طبقة طينية عند 6.5م…"></textarea>
+    </label>
+
+    <label class="f-field">
+      <span>عطل / توقف (لو فيه)</span>
+      <textarea name="breakdown_notes" rows="2" placeholder="نوع العطل ومدة التوقف والإجراء…"></textarea>
+    </label>
+
+    <label class="f-field">
+      <span>ملاحظات عامة</span>
+      <textarea name="remarks" rows="2" placeholder="أي حاجة تانية تستاهل تسجل…"></textarea>
+    </label>
+
+    <label class="f-field">
+      <span>اسم اللي بيسجل</span>
+      <input type="text" id="recorded-by" name="recorded_by" placeholder="اسمك">
+    </label>
+
+    <button type="submit" class="f-submit">💾 تسجيل — بيتحفظ على الجهاز فورًا</button>
+    <p class="f-hint">حتى لو مفيش إنترنت. أول ما الشبكة ترجع بيتبعت تلقائيًا، أو دوس "مزامنة" تحت على الشمال.</p>
+  </form>
+
+  <section class="f-pending">
+    <h2>على الجهاز بانتظار المزامنة <span class="f-badge" id="pending-count">0</span></h2>
+    <ul id="pending-list" class="pending-list"></ul>
+  </section>
+
+  <section class="f-recent">
+    <h2>آخر السجلات من السيرفر <span class="f-badge f-badge-dim">{{ recent_logs | length }}</span></h2>
+    {% if recent_logs %}
+    <ul class="recent-list">
+      {% for log in recent_logs %}
+      <li class="recent-item{% if log.created_offline %} recent-offline{% endif %}">
+        <div class="recent-date">{{ log.log_date }}{% if log.created_offline %} <span title="سُرِّب بدون إنترنت">📡</span>{% endif %}</div>
+        <div class="recent-body">
+          {% if log.pile_id %}<b>الخازوق {{ log.pile_id }}</b> · {% endif %}
+          {% if log.depth_m and log.depth_m > 0 %}عمق {{ '%.1f' % log.depth_m }}م · {% endif %}
+          {% if log.concrete_m3 and log.concrete_m3 > 0 %}خرسانة {{ '%.1f' % log.concrete_m3 }}م³ · {% endif %}
+          {% if log.sheet_pile_m2 and log.sheet_pile_m2 > 0 %}ستائر {{ '%.1f' % log.sheet_pile_m2 }}م² · {% endif %}
+          ساعات {{ '%.1f' % log.operating_hours }}
+        </div>
+        {% if log.soil_notes or log.breakdown_notes or log.remarks %}
+        <div class="recent-notes">{{ (log.breakdown_notes or log.soil_notes or log.remarks or '') | truncate(80) }}</div>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">لسه ما فيش سجلات متزامنة من السيرفر.</p>
+    {% endif %}
+  </section>
+</div>
+
+<button class="sync-fab" id="sync-btn" title="مزامنة السجلات المعلقة مع السيرفر">⬆<span>مزامنة</span><b class="sync-badge" id="sync-badge">0</b></button>
+<div class="f-toast" id="toast" role="status"></div>
+
+<script src="/static/field.js"></script>
+{% endblock %}

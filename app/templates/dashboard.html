@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم — GeoTrack{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>لوحة التحكم التنفيذية</h1>
+  <p class="muted">نظرة واحدة على كل الشركة: المشاريع، المعدات، الفلوس.</p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card accent">
+    <span class="stat-value">{{ stats.in_progress }}</span>
+    <span class="stat-label">مشروع قيد التنفيذ</span>
+    <a class="stat-link" href="/projects">المشاريع ←</a>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">{{ stats.completed }}</span>
+    <span class="stat-label">مشروع مكتمل ومسلم</span>
+    <a class="stat-link" href="/projects">المشاريع ←</a>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">{{ stats.rigs_available }}</span>
+    <span class="stat-label">حفار متاح للتخصيص</span>
+    <a class="stat-link" href="/rigs">الحفارات ←</a>
+  </div>
+  <div class="stat-card warn">
+    <span class="stat-value">{{ stats.rigs_maintenance }}</span>
+    <span class="stat-label">معدة في الصيانة</span>
+    <a class="stat-link" href="/rigs">الحفارات ←</a>
+  </div>
+  <div class="stat-card money">
+    <span class="stat-value ltr">{{ '%.0f' % stats.quotes_value }}</span>
+    <span class="stat-label">إجمالي قيمة العروض ({{ stats.quotes_count }} عرض)</span>
+  </div>
+  <div class="stat-card money">
+    <span class="stat-value ltr">{{ '%.0f' % stats.invoices_value }}</span>
+    <span class="stat-label">إجمالي المحصّل بالفواتير الختامية</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">{{ stats.logs_today }}</span>
+    <span class="stat-label">سجل اليوم من المواقع</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">{{ stats.total_projects }}</span>
+    <span class="stat-label">إجمالي المشاريع</span>
+  </div>
+</div>
+
+<div class="page-head row between" style="margin-top:1.5rem">
+  <h2>أحدث المشاريع</h2>
+  <div class="row">
+    <a class="btn btn-small" href="/upload">＋ رفع مقايسة</a>
+    <a class="btn btn-small" href="/projects">كل المشاريع ←</a>
+  </div>
+</div>
+
+{% if cards %}
+<div class="card-grid">
+  {% for card in cards %}
+  <a class="project-card" href="/projects/{{ card.project.id }}">
+    <div class="pc-top">
+      <span class="pc-name">{{ card.project.name }}</span>
+      <span class="tag tag-{{ card.project.status }}">{{ status_ar[card.project.status] if card.project.status in status_ar else card.project.status }}</span>
+    </div>
+    <div class="pc-client">{{ card.client.name if card.client else 'بدون عميل' }}</div>
+    {% if card.quote_code %}
+    <div class="pc-quote mono">{{ card.quote_code }}{% if card.quote_total %} · {{ card.quote_total }} {{ card.currency }}{% endif %}</div>
+    {% else %}
+    <div class="pc-quote muted">لا يوجد عرض سعر بعد</div>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty"><div class="empty-icon">🚀</div><p>ابدأ برفع أول مقايسة — <a href="/upload">ارفع ملف الآن</a>.</p></div>
+{% endif %}
+
+{% endblock %}

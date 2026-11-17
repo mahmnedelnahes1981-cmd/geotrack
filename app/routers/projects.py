@@ -6,14 +6,14 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
-from app.config import BASE_DIR
+from app.config import PACKAGE_DIR
 from app.db import get_db
 from app.models import Client, DailyLog, Document, Project, Quote, Rig, BoqItem, BoqItemStatus
 from app.pricing import quote_code
 from app.progress import project_progress
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
+templates = Jinja2Templates(directory=str(PACKAGE_DIR / "templates"))
 
 STATUS_AR = {"new": "جديد", "in_progress": "قيد التنفيذ", "completed": "مكتمل", "on_hold": "معلّق"}
 RIG_KIND_AR = {"micropile_drill": "حفار خوازيق دقيقة", "sheet_pile_driver": "دق ستائر لوحية",

@@ -1,0 +1,35 @@
+# app + PostgreSQL 16 — one command: docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: geotrack
+      POSTGRES_PASSWORD: geotrack
+      POSTGRES_DB: geotrack
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U geotrack"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://geotrack:geotrack@db:5432/geotrack
+      QUOTE_TAX_RATE: "14.0"
+      # fill these in for your company / LLM provider:
+      COMPANY_NAME_AR: "شركة جيوتراك للحفر والأساسات"
+      COMPANY_NAME_EN: "GeoTrack Foundations & Drilling Co."
+      LLM_BASE_URL: "http://host.docker.internal:11434/v1"
+      LLM_API_KEY: "ollama"
+      LLM_MODEL: "qwen2.5vl:7b"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

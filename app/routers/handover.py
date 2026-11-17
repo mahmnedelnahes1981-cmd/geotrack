@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config import BASE_DIR, get_settings
+from app.config import PACKAGE_DIR, get_settings
 from app.db import get_db
 from app.invoicing import create_invoice
 from app.models import AuditLog, Client, Document, Invoice, Project, Quote, Rig
@@ -17,7 +17,7 @@ from app.pricing import quote_code
 from app.report_pdf import build_report_pdf
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
+templates = Jinja2Templates(directory=str(PACKAGE_DIR / "templates"))
 
 
 def _latest_quote(session: Session, project_id: int) -> Quote | None:

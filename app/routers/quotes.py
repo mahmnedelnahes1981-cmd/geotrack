@@ -10,14 +10,14 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config import BASE_DIR, get_settings
+from app.config import PACKAGE_DIR, get_settings
 from app.db import get_db
 from app.models import Document, PriceList, Project, Quote, QuoteStatus, AuditLog
 from app.pricing import create_quote, load_quote_lines, quote_code, recompute_quote_tax
 from app.quote_pdf import build_quote_pdf
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
+templates = Jinja2Templates(directory=str(PACKAGE_DIR / "templates"))
 
 
 def _quote_error_redirect(document_id: int, code: str) -> RedirectResponse:

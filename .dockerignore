@@ -1,0 +1,19 @@
+# local artefacts must not leak into the image
+.venv/
+.git/
+.gitignore
+.gitattributes
+.pytest_cache/
+__pycache__/
+*.pyc
+.env
+geotrack.db
+storage/
+.eggs/
+*.egg-info/
+tests/
+docs/
+README.md
+.dockerignore
+Dockerfile
+docker-compose.yml

@@ -11,12 +11,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config import BASE_DIR
+from app.config import PACKAGE_DIR
 from app.db import get_db
 from app.models import DailyLog, Project, Rig
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
+templates = Jinja2Templates(directory=str(PACKAGE_DIR / "templates"))
 
 
 @router.get("/projects/{project_id}/field", response_class=HTMLResponse)

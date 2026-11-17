@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.config import BASE_DIR, get_settings
+from app.config import PACKAGE_DIR, get_settings
 from app.db import get_db
 from app.models import (
     AuditLog,
@@ -27,7 +27,7 @@ from app.models import (
 from app.services import ingest_file
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
+templates = Jinja2Templates(directory=str(PACKAGE_DIR / "templates"))
 
 CATEGORIES: list[tuple[str, str]] = [
     ("drilling", "حفر"),

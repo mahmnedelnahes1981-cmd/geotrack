@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoTrack — للشركات التي تحفر بكفاءة</title>
+<style>
+  :root {
+    --bg: #0f141a;
+    --surface: #171f28;
+    --surface-2: #1f2a35;
+    --border: #2b3947;
+    --text: #e8edf2;
+    --muted: #8a99a8;
+    --accent: #f0b429;
+    --accent-dark: #c98a0a;
+    --ok: #2fbf71;
+    --bad: #e5534b;
+    --warn: #f5c542;
+    --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Tahoma, "Noto Kufi Arabic", sans-serif;
+    overflow: hidden;
+  }
+  .slide {
+    display: none;
+    width: 100vw; height: 100vh;
+    padding: 4vh 6vw;
+    position: relative;
+  }
+  .slide.active { display: block; }
+
+  h1 { font-size: 3.2rem; line-height: 1.15; margin-bottom: 1rem; }
+  h2 { font-size: 2rem; color: var(--accent); margin-bottom: 1.5rem; }
+  h3 { font-size: 1.2rem; color: var(--muted); margin-bottom: .75rem; }
+  p { font-size: 1.15rem; line-height: 1.8; color: var(--text); }
+  .muted { color: var(--muted); }
+  .accent { color: var(--accent); }
+  .danger { color: var(--bad); }
+  .ok { color: var(--ok); }
+
+  .grid { display: grid; gap: 1.25rem; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.4rem;
+  }
+  .card-danger { border-color: rgba(229,83,75,.4); background: rgba(229,83,75,.06); }
+  .card-accent { border-color: var(--accent-dark); background: rgba(240,180,41,.06); }
+
+  .big-number { font-size: 3.5rem; font-weight: 800; color: var(--accent); display: block; line-height: 1; }
+  .big-number.bad { color: var(--bad); }
+
+  .chip { display:inline-block; padding:.3rem .8rem; border-radius:999px; border:1px solid var(--border); font-size:.8rem; color: var(--muted); margin-bottom: 1rem; }
+
+  img.shot { width: 100%; max-height: 78vh; object-fit: contain; border: 1px solid var(--border); border-radius: 10px; background: #0b0f14; }
+
+  /* top navigation */
+  .nav { position: absolute; top: 2vh; left: 2vw; right: 2vw; display: flex; justify-content: space-between; align-items: center; }
+  .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: .5px; }
+  .brand small { color: var(--muted); font-size: .7rem; margin-right: .4rem; display:block }
+  .counter { color: var(--muted); font-size: .85rem; }
+  .footer { position: absolute; bottom: 2vh; right: 2vw; color: var(--muted); font-size: .7rem; }
+
+  .flow { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin: 1rem 0; }
+  .flow-step { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: .8rem 1.1rem; font-size: .95rem; }
+  .flow-arrow { color: var(--accent); font-size: 1.3rem; }
+
+  .check li { list-style: none; padding: .35rem .35rem .35rem 1.5rem; position: relative; }
+  .check li::before { content: "✓"; color: var(--ok); position: absolute; right: -.2rem; font-weight: 700; }
+
+  .bar-bg { background: var(--surface-2); border-radius: 999px; height: 14px; overflow: hidden; margin-bottom: .6rem; }
+  .bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent-dark), var(--accent)); }
+
+  .progress-nav { position: fixed; bottom: 3vh; left: 50%; transform: translateX(-50%); display: flex; gap: .4rem; z-index: 10; }
+  .progress-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; }
+  .progress-dot.active { background: var(--accent); }
+
+  .controls { position: fixed; bottom: 2vh; right: 2vw; display: flex; gap: .5rem; z-index: 10; }
+  button.navbtn { background: var(--surface); border: 1px solid var(--border); color: var(--text); width: 44px; height: 44px; border-radius: 10px; font-size: 1.2rem; cursor: pointer; }
+  button.navbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  @media print {
+    .controls, .progress-nav { display: none; }
+    .slide { display: block !important; height: auto; page-break-after: always; overflow: visible; }
+    body { overflow: visible; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Slide 1 — Cover -->
+<section class="slide active">
+  <div class="nav"><div class="brand">GeoTrack<small>BOQ → Handover</small></div><div class="counter">1 / 12</div></div>
+  <div style="display:flex; flex-direction:column; justify-content:center; height:78vh; text-align:center; align-items:center;">
+    <div class="chip">للشركات التي تحفر — حرفيًا — كل يوم</div>
+    <h1 style="font-size:4.2rem; margin-bottom:.6rem;">المقايسة اليوم<br><span class="accent">جاهزة في دقائق.</span></h1>
+    <p style="font-size:1.4rem; max-width: 900px;">من ملف المقايسة للعرض المعتمد — إلى سجل ميداني بلا نت — إلى الفاتورة النهائية من واقع الشغل الحقيقي. منصة واحدة.</p>
+    <div style="margin-top:2rem; color: var(--muted); font-size:.9rem;">GeoTrack — نظام إدارة الحفر والأساسات العميقة</div>
+  </div>
+  <div class="footer">geotrack.mahmnedelnahes1981-cmd.github.io/geotrack · MIT</div>
+</section>
+
+<!-- Slide 2 — The 4 gaps -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">2 / 12</div></div>
+  <h2>أين تتعطل شركات الحفر فعليًا اليوم؟</h2>
+  <div class="grid grid-2" style="max-width: 1050px;">
+    <div class="card card-danger"><div class="big-number bad">01</div>التسعير بيد البشر — والبشر يغلطونعند كل مناقصة: من 800 إلى 5,000 بند تُقرأ يدويًا من PDF وتُضرَب في قائمة الأسعار. يومين عمل لكل مناقصة واحدة — والأخطاء بتترمش للعميل.</div>
+    <div class="card card-danger"><div class="big-number bad">02</div>الميدان في دفتر المهندسة — والدفتر بيتورقف دفترًا لكل معدة: 'حفرنا 18م عند P-03'… ضاع بين الكابينة والشباك. لما الفاتورة تيجي في آخر شهر — مفيش رقم واحد تثق فيه.</div>
+    <div class="card card-danger"><div class="big-number bad">03</div>لا توجد علاقة بين العقد والفوترةالعملة: عرض السعر ← العقد ← أوامر التغيير ← حصر الأعمال ← تعليمات الموقع — كلها مستندات مختلفة. الفاتورة النهائية غالبًا تطلع أقل من الواجب أو تتأخر شهر كامل.</div>
+    <div class="card card-danger"><div class="big-number bad">04</div>مفيش دليل واحد يطلع بمجرد السؤال:الاستشاري يسأل "وين الشهادات؟" أو "مين المفتش؟" — والإجابة بصور من الموبايل ودفاتر ورقية لا تثبت شيئًا.</div>
+  </div>
+  <div class="footer">القطاع: خوازيق دقيقة · ستائر لوحية · جيت جروت</div>
+</section>
+
+<!-- Slide 3 — Cost in numbers -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">3 / 12</div></div>
+  <h2>ماذا يعني ذلك فعليًا على أرض الواقع؟</h2>
+  <div class="grid grid-3" style="margin-bottom: 1.5rem;">
+    <div class="card"><span class="big-number">2–4</span><p class="muted">أيام لكل مناقصة — مقارنة بتسعير آلي في دقائق بدلًا منها</p></div>
+    <div class="card"><span class="big-number">30–60</span><p class="muted">يومًا متوسطًا لتسوية فاتورة واحدة — بدلًا من 5–7 أيام بعد إنهاء المشروع مباشرة</p></div>
+    <div class="card"><span class="big-number">0</span><p class="muted">رقم عالمي يمكن الوثوق به: بلا نظام — ما فيش ملف موحد يوريك ما نُفّذ فعلًا</p></div>
+  </div>
+  <div class="card card-accent">
+    <p style="font-size: 1.3rem;">النتيجة المباشرة:</p>
+    <div class="grid grid-2" style="margin-top: .5rem; gap: .5rem;">
+      <p>• <span class="accent">عروض أقل</span> — كل مناقصة تُنهي خلال ساعات بدل أيام.</p>
+      <p>• <span class="accent">عميل يعتمد</span> — PDF بعرض السعر الرسمي، تقرير فني للخوازيق، فاتورة كخُلاصة الموقع — كلها أورواق رسمية.</p>
+      <p>• <span class="accent">تحصيل أسرع</span> — الأوراق اللي الفاتورة تحتاجها جاهزة بمطابقة آلية، ما فيش مراجعات.</p>
+      <p>• <span class="accent">قرارات بالبيانات</span> — أنت تعرف في كل صباح ما نُفّذ أمس كمياره.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 4 — The one-line solution -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">4 / 12</div></div>
+  <div style="display:flex; flex-direction:column; justify-content:center; height:75vh; text-align:center; align-items:center;">
+    <h2 style="font-size: 2.6rem; margin-bottom: 2rem;">الحل في جملة واحدة</h2>
+    <p style="font-size: 1.8rem; max-width: 1000px; line-height: 1.7;">من <span class="accent">ملف المقايسة</span> إلى <span class="accent">عرض السعر</span> إلى <span class="accent">الحفر والستائر اللوحية</span> في الموقع ثم <span class="accent">الفاتورة</span> —<br>كل ذلك في نظام واحد، يُحسب آليًا ويُراجع بشريًا قبل أي رقم يظهر للعميل.</p>
+    <div class="flow" style="justify-content:center; margin-top:2rem;">
+      <div class="flow-step">📄 مقايسة (PDF/Excel)</div><div class="flow-arrow">←</div>
+      <div class="flow-step">🤖 استخراج + تسعير</div><div class="flow-arrow">←</div>
+      <div class="flow-step">👁 اعتماد بشري</div><div class="flow-arrow">←</div>
+      <div class="flow-step">📱 سجل ميداني (بلا نت)</div><div class="flow-arrow">←</div>
+      <div class="flow-step">🧾 فاتورة + تقرير</div>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 5 — Phase 1: Pricing -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">5 / 12</div></div>
+  <h2>القرار الأول في كل مشروع: السعر — يتبنى لوحده</h2>
+  <div class="grid grid-2">
+    <div>
+      <div class="card card-accent" style="margin-bottom: 1rem;">
+        <div class="chip">ملف المقايسة</div>
+        <p><b>PDF / Excel / Word (عربي أو إنجليزي)</b> — وحتى الممسوح منه بصورة.</p>
+      </div>
+      <ol style="margin-right: 1.6rem; line-height: 2; font-size: 1.1rem;">
+        <li>النظام يقرأ البنود تلقائيًا — الوصف، الكمية، الوحدة — مع التحقق من صحة كل صف.</li>
+        <li>يقترح بند من قائمة الأسعار لكل بند مقايسة، وتبقى تحتاج "موافقة" أو "تعديل".</li>
+        <li>مفيش رقم يخرج للعميل إلا بعد ما مهندسك يشوفه ويوافق عليه.</li>
+      </ol>
+      <p class="muted" style="margin-top: 1rem;">ما فيش سرعة بدون دقة — الدقة تُراجِعها.</p>
+    </div>
+    <div>
+      <img class="shot" src="screenshots/review-ui.png" alt="شاشة المراجعة">
+      <p class="muted" style="font-size:.85rem; margin-top:.5rem;">شاشة المراجعة — بنود بالعربي والإنجليزي مع نسبة ثقة لكل بند.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 6 — Phase 2: Field log -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">6 / 12</div></div>
+  <h2>القرار اليومي: كل متر يُسجَّل من الكابينة</h2>
+  <div class="grid grid-2">
+    <div>
+      <p>شاشة سواق الحفار على مقاس التليفون:</p>
+      <ul class="check" style="margin-top: 1rem;">
+        <li>أزرار كبيرة بلا كتابة صغيرة — صالحة حتى بإيد واقي واحد.</li>
+        <li><b>بتشتغل بدون إنترنت</b> في الصحراء أو الأنفاق — كل سجل بيتخزن على الجهاز ويرفع تلقائي أول ما النت يرجع.</li>
+        <li>عمق الحفر، كمية الخرسانة، ستائر مركبة، ساعات التشغيل، ملاحظات التربة — كل حاجة بلحظة تسجيل واحدة.</li>
+        <li>مفيش سجل بـ "مش فاكر" — كل الخانات متغطية.</li>
+      </ul>
+      <div class="card" style="margin-top: 1rem;"><div class="chip" style="margin-bottom:.5rem">بلا إنترنت — بلا ورق</div><p style="font-size:.95rem">في المواقع المعزولة — لا شبكة، لا دفتر، لا تأخير إدخال بيانات.</p></div>
+    </div>
+    <div style="display:flex; gap:1rem; justify-content:center;">
+      <img class="shot" src="screenshots/field-mobile.png" alt="شاشة السواق" style="max-width:320px;">
+    </div>
+  </div>
+</section>
+
+<!-- Slide 7 — Phase 3: As-built invoice -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">7 / 12</div></div>
+  <h2>التقفيل: حصر الأعمال و الفاتورة — تلقائيًا</h2>
+  <div class="grid grid-2">
+    <div>
+      <ol style="margin-right: 1.6rem; line-height: 2; font-size: 1.1rem;">
+        <li>"مت المتعاقد؟" "مت اللي اتعمل فعلًا؟" — الفرق بيتحسب بثانية.</li>
+        <li>فاتورة الختامية بالتفصيل: بنود سليّم وحفوظ وفائتات — مفيش حاجة تخفى على العميل.</li>
+        <li>تقرير فني للخوازيق للتسليم للاستشاري: كل خازوق بتاريخه وعمقه وبياناته.</li>
+        <li>مفيش رقم يخيل: العميل يقارن العقد بالتنفيذ — في PDF واحد، جاهز.</li>
+      </ol>
+      <p class="muted" style="margin-top: 1rem;">عملاؤك ما يشكّوش — يعاينوا.</p>
+    </div>
+    <div>
+      <img class="shot" src="screenshots/quote-pdf.png" alt="عرض السعر PDF">
+      <p class="muted" style="font-size:.85rem; margin-top:.5rem;">عرض السعر الرسمي (GT-0001-v1) — التصميم نفسه بيتستخدم في الفاتورة الختامية.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 8 — AI does what it should -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">8 / 12</div></div>
+  <h2>الذكاء الاصطناعي — في مكانه الصح بالظبط</h2>
+  <div class="card" style="margin-bottom: 1rem;">
+    <h3 style="margin-bottom:.5rem">الذكاء يقترح. الإنسان يعتمد. المنطق يطبع.</h3>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <p><b class="accent">الذكاء الاصطناعي (اختياري):</b></p>
+      <p class="muted" style="margin-top:.3rem">يقرأ نص البند المكتوب بإيد الورق في صورة المقايسة ويرجّعه لحقل منظم (الكمية، الوحدة، الوصف) — ويقترح بند قائمة الأسعار المناسب.</p>
+      <p class="muted" style="margin-top:.3rem">لكنه <b>ممنوع من لمس الأرقام</b> — الأسعار والكميات دايمًا حسابات حتمية، مش ذكاء، ومفيش رقم يتبنى على تخيل.</p>
+    </div>
+    <div class="card">
+      <p><b class="accent">الحتمية (Heuristic):</b></p>
+      <p class="muted" style="margin-top:.3rem">كشف الجدول من الـ PDF. تحليل الأرقام العربية (٨٥٠) والفواصل. تحويل الوحدات طن ↔ كجم. حساب الإجمالي × الوحدة المعرفة بالكتالوج.</p>
+      <p class="muted" style="margin-top:.3rem">ده كله deterministic — نفس الملف بيعطي نفس الناتج دايمًا.</p>
+    </div>
+  </div>
+  <div class="card card-accent" style="margin-top: 1rem;">
+    <p><b>لأن العميل مش هيقبل الأخطاء:</b> لو بند ماكنتش واثق منه الذكاء، النظام يعلمه بإشارة واضحة — وإنت اللي تراجعه قبل ما يظهر للعميل.</p>
+  </div>
+</section>
+
+<!-- Slide 9 — What changes in practice -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">9 / 12</div></div>
+  <h2>ماذا يتغير فعليًا من اليوم الأول</h2>
+  <div class="grid grid-2" style="max-width: 1050px;">
+    <div>
+      <p class="muted" style="font-size:.9rem">قبل GeoTrack</p>
+      <div class="bar-bg"><div class="bar-fill" style="width:15%"></div></div><small class="muted">مناقصة واحدة = 2–4 أيام يدوي</small>
+      <div class="bar-bg" style="margin-top:.8rem"><div class="bar-fill" style="width:20%; background: var(--bad)"></div></div><small class="muted">دفتر واحد لفلوس منسية في الكابينة</small>
+      <div class="bar-bg" style="margin-top:.8rem"><div class="bar-fill" style="width:10%; background: var(--bad)"></div></div><small class="muted">حصر أعمال يدوي + فاتورة تتأخر أسابيع</small>
+    </div>
+    <div>
+      <p class="muted" style="font-size:.9rem">بعد GeoTrack</p>
+      <div class="bar-bg"><div class="bar-fill" style="width:90%"></div></div><small class="muted">مناقصة = دقائق + مراجعة مهندسك</small>
+      <div class="bar-bg" style="margin-top:.8rem"><div class="bar-fill" style="width:95%"></div></div><small class="muted">كل خازوق متراقب من الموقع في الحين</small>
+      <div class="bar-bg" style="margin-top:.8rem"><div class="bar-fill" style="width:92%"></div></div><small class="muted">حصر آلي ← فاتورة جاهزة قبل ما المهندس يسيب المكتب</small>
+    </div>
+  </div>
+  <p class="muted" style="margin-top: 1rem;">النتيجة: نفس الفريق — يقدر ياخد نفس عدد المناقصات، أو ضعفها، بنفس الدقة.</p>
+</section>
+
+<!-- Slide 10 — Use case -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">10 / 12</div></div>
+  <h2>استخدام نموذجي — شركة خوازيق دقيقة</h2>
+  <div class="card" style="margin-bottom:1rem; border-color: var(--accent-dark)">
+    <p><b class="accent">سيناريو:</b> مناقصة خوازيق دقيقة 32 خازوق + ستائر لوحية 420 م².</p>
+  </div>
+  <div class="grid grid-3">
+    <div class="card"><h3>اليوم 0 — المناقصة</h3><p class="muted">ترفع PDF المقايسة ← النظام يستخرج الـ 800 بند ← مهندسك يراجع في 15 دقيقة ← العرض يطلع.</p></div>
+    <div class="card"><h3>اليوم 1–14 — التنفيذ</h3><p class="muted">السواق يسجل من التليفون: 850 م حفر + 96 م³ خرسانة + 420 م² ستائر ← كل سجل يدخل لحظتها.</p></div>
+    <div class="card"><h3>اليوم 15 — التقفيل</h3><p class="muted">النظام يقارن العقد بالمنفذ ← فاتورة ختامية جاهزة + تقرير فني للاستشاري ← تسليم وتوقيع.</p></div>
+  </div>
+  <p class="muted" style="margin-top: 1rem;">نفس السيناريو — للستائر اللوحية، الخوازيق الدقيقة، والجيت جروت.</p>
+</section>
+
+<!-- Slide 11 — Summary card -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">11 / 12</div></div>
+  <h2>لماذا GeoTrack و ليس نظامًا آخر؟</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <p>✓ <b>مبني للحفر</b> — ليس نظام ERP عام يُجمَّع على مقاسك. الوحدات: حفر، خوازيق، ستائر، خرسانة.</p>
+      <p style="margin-top:.5rem">✓ <b>عربي/إنجليزي</b> — مقايسات عربية وإنجليزية، أزرار عربية، RTL كامل.</p>
+      <p style="margin-top:.5rem">✓ <b>بدون نت</b> — في الصحراء أو الأنفاق أو البحر.</p>
+      <p style="margin-top:.5rem">✓ <b>بدون تضحية بالدقة</b> — كل رقم يُراجع بشريًا قبل العرض.</p>
+    </div>
+    <div class="card">
+      <p>✓ <b>لا تحتاج فريق IT</b> — في المتصفح، تشتغل من أي جهاز، موبايل أو ديسكتوب.</p>
+      <p style="margin-top:.5rem">✓ <b>أرقامك، قائمتك</b> — الأسعار والخصومات والتكاليف من شركتك أنت.</p>
+      <p style="margin-top:.5rem">✓ <b>بدون رسوم اشتراك لمرحلة التجربة</b> — يعمل على جهازك أو سيرفرك.</p>
+      <p style="margin-top:.5rem">✓ <b>مفتوح المصدر (MIT)</b> — يقبل التخصيص لخط إنتاجك.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Slide 12 — CTA -->
+<section class="slide">
+  <div class="nav"><div class="brand">GeoTrack</div><div class="counter">12 / 12</div></div>
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:78vh; text-align:center;">
+    <h1 style="font-size: 3rem;">جربها بنفسك<br><span class="accent">— بدل قراءة العرض ده.</span></h1>
+    <p style="font-size: 1.2rem; margin: 1rem 0; max-width: 800px;">حمّل المشروع — 83 اختبار أخضر — ورفع مقايستك الحقيقية عليه. الفرق وحده يشيح.</p>
+    <div style="display:flex; gap: 1rem; margin-top: 1rem;">
+      <div class="flow-step" style="font-size: 1.05rem;">github.com/mahmnedelnahes1981-cmd/geotrack</div>
+    </div>
+    <p class="muted" style="margin-top: 1.5rem; font-size: .8rem;">Software Components by GeoTrack — Open Source (MIT) · 2026</p>
+  </div>
+  <div class="footer">GeoTrack</div>
+</section>
+
+<!-- Navigation -->
+<div class="progress-nav" id="dots"></div>
+<div class="controls">
+  <button class="navbtn" id="prev" title="السابق">→</button>
+  <button class="navbtn" id="next" title="التالي">←</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let current = 0;
+  const dotsContainer = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => show(i));
+    dotsContainer.appendChild(dot);
+  });
+  const dots = Array.from(dotsContainer.children);
+  function show(i) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, j) => s.classList.toggle('active', j === current));
+    dots.forEach((d, j) => d.classList.toggle('active', j === current));
+  }
+  document.getElementById('next').addEventListener('click', () => show(current + 1));
+  document.getElementById('prev').addEventListener('click', () => show(current - 1));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'PageDown') show(current + 1);
+    if (e.key === 'ArrowRight' || e.key === 'PageUp') show(current - 1);
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+  });
+  // simple swipe support for tablets/phones
+  let touchX = null;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 40) show(current + (dx > 0 ? -1 : 1));
+    touchX = null;
+  });
+</script>
+</body>
+</html>

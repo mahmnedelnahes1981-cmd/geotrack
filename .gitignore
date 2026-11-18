@@ -27,3 +27,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# local archive, not part of the project
+geotrack-missing-files.zip

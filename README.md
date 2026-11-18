@@ -18,14 +18,23 @@
 
 ---
 
-## لقطات من النظام (Screenshots)
+## لقطات من النظام
 
-أضف صور الشاشات في مجلد `docs/screenshots/` واربطها هنا قبل النشر على GitHub:
+**لوحة التحكم التنفيذية** — كل المشاريع والمعدات والفلوس في نظرة واحدة:
 
-- لوحة التحكم التنفيذية (`docs/screenshots/dashboard.png`)
-- شاشة المراجعة والتسعير (`docs/screenshots/review-ui.png`)
-- شاشة سواق الحفار RTL — Offline First (`docs/screenshots/field-mobile.png`)
-- نموذج عرض السعر / التقرير الفني PDF (`docs/screenshots/quote-pdf.png`)
+![لوحة التحكم التنفيذية](docs/screenshots/dashboard.png)
+
+**شاشة المراجعة والتسعير** — الخام مقابل المطبّع، اقتراح بند السعر، واعتماد بضغطة:
+
+![شاشة المراجعة والتسعير](docs/screenshots/review-ui.png)
+
+**شاشة سواق الحفار** — أزرار كبيرة، RTL، بتشتغل بدون إنترنت (موبايل):
+
+![شاشة سواق الحفار — RTL Offline First](docs/screenshots/field-mobile.png)
+
+**عرض السعر GT-0001-v1** — بعد التسعير الآلي من مقايسة عربية، بالإجمالي والضريبة:
+
+![عرض السعر](docs/screenshots/quote-pdf.png)
 
 ---
 

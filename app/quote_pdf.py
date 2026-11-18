@@ -2,14 +2,12 @@
 
 from datetime import datetime
 from decimal import Decimal
-from pathlib import Path
+
 
 from app.config import get_settings
 from app.pricing import quote_code
 
-_FONT_DIR = Path("C:/Windows/Fonts")
-_REGULAR = _FONT_DIR / "tahoma.ttf"
-_BOLD = _FONT_DIR / "tahomabd.ttf"
+from app.pdf_common import _REGULAR, _BOLD
 
 INK = (36, 26, 2)          # near-black warm
 SLATE = (31, 42, 53)       # dark slate panel

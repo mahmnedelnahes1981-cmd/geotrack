@@ -2,9 +2,31 @@
 
 from pathlib import Path
 
-_FONT_DIR = Path("C:/Windows/Fonts")
-_REGULAR = _FONT_DIR / "tahoma.ttf"
-_BOLD = _FONT_DIR / "tahomabd.ttf"
+_BUNDLED = Path(__file__).resolve().parent / "assets" / "fonts"
+_CANDIDATES = {
+    "regular": ["Amiri-Regular.ttf", "tahoma.ttf", "NotoSerif-Regular.ttf", "DejaVuSerif.ttf"],
+    "bold": ["Amiri-Bold.ttf", "tahomabd.ttf", "NotoSerif-Bold.ttf", "DejaVuSerif-Bold.ttf"],
+}
+
+
+def _font_path(kind: str) -> Path:
+    for filename in _CANDIDATES[kind]:
+        bundled = _BUNDLED / filename
+        if bundled.exists():
+            return bundled
+        windows = Path("C:/Windows/Fonts") / filename
+        if windows.exists():
+            return windows
+        linux = Path("/usr/share/fonts/truetype/dejavu") / filename
+        if linux.exists():
+            return linux
+    raise FileNotFoundError(
+        f"No usable font found for '{kind}'. Bundled fonts in app/assets/fonts or system fonts are required."
+    )
+
+
+_REGULAR = _font_path("regular")
+_BOLD = _font_path("bold")
 
 INK = (36, 26, 2)
 SLATE = (31, 42, 53)

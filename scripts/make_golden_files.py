@@ -8,7 +8,7 @@ from pathlib import Path
 
 from openpyxl import Workbook
 
-WINDOWS_FONTS = Path("C:/Windows/Fonts")
+WINDOWS_FONTS = Path(__file__).resolve().parent.parent / "app" / "assets" / "fonts"
 
 FIXTURES = Path(__file__).resolve().parent.parent / "tests" / "fixtures"
 FIXTURES.mkdir(parents=True, exist_ok=True)
@@ -147,7 +147,7 @@ def make_ar_pdf() -> Path:
     pdf.set_auto_page_break(auto=False)
     pdf.add_page()
     pdf.set_margins(15, 15, 15)
-    pdf.add_font("Tahoma", "", str(WINDOWS_FONTS / "tahoma.ttf"))
+    pdf.add_font("Tahoma", "", str(WINDOWS_FONTS / "Amiri-Regular.ttf"))
     pdf.set_text_color(30, 30, 30)
 
     pdf.set_font("Tahoma", "", 13)
